@@ -10,7 +10,10 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
   <style type="text/css">
   #yourside {width:33%;float:left;}
-  #themap {width:33%;border:1px solid blue;height:400px;float:left;}
+  #themap {width:33%;border:1px solid blue;height:400px;float:left;position:relative;}
+  #themap div {position:absolute;width:50%;height:100%;top:0px;}
+  #themap #battle0 {left:0px;text-align:right;}
+  #themap #battle1 {right:0px;text-align:left;}
     #draggable {border:0px solid red;z-index:100;position:absolute; width: 50px; height: 50px; background: silver; }
     #city {background-color:red;border:0px solid red;position:absolute;top:300px;width:100px;height:100px;}
 	#city div{background:#ccf;height:100px;}
@@ -141,10 +144,12 @@ x.register("battle",function(battle)
 	var str;
 	$("#battle").html("");
 			for(i in battle){
+				for(j in battle[i]){
 				//str = "<li ><span class='mil' >!</span><span style='display:block;background:red;width:"+battle[i].hp+"'></span></li><span> </span>";
-			str = "<div class='bui'><div class='mil' >!</div><div style='position:absolute;top:0px;left:0px;background:rgba(255,0,0,.3);height:1.2em;width:"+battle[i].hp+"'></div></div>";
-				$("#battle").append(str);
+			str = "<div class='bui'><div class='mil' >!</div><div style='position:absolute;top:0px;left:0px;background:rgba(255,0,0,.3);height:1.2em;width:"+battle[i][j].hp+"'></div></div>";
+			$("#battle"+i).append(str);
 				}
+			}
 		});
 x.register("gold",function(gold)
 		{
@@ -219,7 +224,7 @@ function doit(type){
 <legend>Factories
 </legend><div id="factories"></div></fieldset>
 </div>
-<div id="themap"><div id="battle"></div></div>
+<div id="themap"><div id="battle0"></div><div id="battle1"></div></div>
 <div id="theirside"><fieldset>
 <legend>Enemy
 </legend><div id="enemy" class='mil'></div></fieldset>

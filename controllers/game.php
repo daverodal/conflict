@@ -119,7 +119,6 @@ class Game extends CI_Controller {
               $doc->$user->data->gold -= 100;
               $num = count($doc->$user->data->army);
               $doc->$user->data->building[] = array("name"=>"$num Army","hp"=>0);
-              var_dump($doc);
             }
           }
           if($data["mines"]){
@@ -153,7 +152,7 @@ class Game extends CI_Controller {
       $doc->$user->data->gold = 50;
       $doc->$user->data->mines = 5;
       $doc->$user->data->factories = 0;
-      $doc->$user->data->battle = false;
+      $doc->$user->data->battle = array();
       $doc->$user->data->building = array();
       $doc->$user->data->army = array();
       $doc->$user->data->army[] = array("name"=>"$num Army","hp"=>30);
@@ -183,14 +182,12 @@ class Game extends CI_Controller {
           $startdate = false;
         }
         echo "Got\n";
-        echo $date = time();
+        $date = time();
         $doc->date = $date;
-        echo $doc->startdate;
         $sd = new DateTime("@".$doc->startdate);
         $cd = new DateTime("@$date");
         $datediff = $cd->diff($sd);
-        echo $doc->clock = $datediff->format("%H:%I:%S");
-        // echo $doc->clock = date_diff(new DateTime("@$date","@".$doc->startdate))->format("%H:%I:%S");
+        $doc->clock = $datediff->format("%H:%I:%S");
         foreach($doc->users as $user){
           $doc->$user->data->gold += $doc->$user->data->mines * .33;
           $factories = $doc->$user->data->factories;
@@ -209,26 +206,46 @@ class Game extends CI_Controller {
             }
           }
           $doc->$user->data->building = $building;
-          if(!$doc->$user->data->battle){
+        }
+        foreach($doc->users as $user){
+        if(count($doc->$user->data->battle) == 0){
             if(!$army = array_shift($doc->$user->data->army)){
               $doc->$user->data->lose = true;
               $this->alive = false;
             }else{
-              $doc->$user->data->battle = $army;
-            }
-          }else{
-            $doc->$user->data->battle->hp -= 1;
-            
-            if($doc->$user->data->battle->hp <= 0){
-              $doc->$user->data->battle = false;
+              echo $user." Fetched a reserve\n";
+              $doc->$user->data->battle[] = $army;
             }
           }
-
+        }
+        foreach($doc->users as $user){
+            foreach($doc->users as $auser){
+              if($auser != $user){
+                $myEnemy = $auser;
+                break;
+              }
+            }
+            echo "$user attacks $myEnemy\n";
+            $enemies = count($doc->$myEnemy->data->battle);
+            $friends = count($doc->$user->data->battle);
+            echo "Friends $friends Enemy $enemies\n";
+            $battleResults->$user->battle = $doc->$user->data->battle;
+            while($enemies--){
+              $battleResults->$user->battle[0]->hp -= 1;
+              echo "$user(s) $enemies hit ".$battleResults->$user->battle[0]->hp."\n";
+              if($battleResults->$user->battle[0]->hp <= 0){
+                echo "$user Lost a unit in action";var_dump($battleResults->$user->battle);
+                array_shift($battleResults->$user->battle);
+                var_dump($battleResults->$user->battle);
+              }
+            }
+          }
+        foreach($battleResults as $aUser => $battle){
+          $doc->$aUser->data->battle = $battleResults->$aUser->battle;
         }
         try{
-          echo "putting\n";
+          echo "putting=================================================================\n";
           $success = $this->couch->put($doc->_id,$doc);
-          if($army)var_dump($army);
           echo "put $loop\n";$loop++;
         }catch(Exception $e){
           if($e->getCode() == 409){
