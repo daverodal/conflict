@@ -1,5 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+/* a comment */
 class Game extends CI_Controller {
   protected $alive = true;
   function kill(){
